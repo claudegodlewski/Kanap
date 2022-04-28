@@ -3,20 +3,20 @@ fetch("http://localhost:3000/api/products")
 
 // Récupération du résultat au format JSON et vérification du succès de la requête: "res.json" et "res.ok".
 .then(function(res) {
-    if (res.ok) {
+  if (res.ok) {
     return res.json();
     }
 })
 
 // Récupération dans la valeur dans "produits" et utilisation de la fonction "accueil".
 .then(function(produits) {
-    console.log(produits);
+  console.log(produits);
     accueil(produits);
 })
 
 // Gestion des erreurs.
 .catch(function(err) {
-console.log("Erreur:" + err);}
+  console.log(err)
 })
 
 // Fonction: affichage des produits sur la page d'accueil.
@@ -37,4 +37,5 @@ for (let article of index) {
     </article>
   </a>`;
   }
+  
 }
