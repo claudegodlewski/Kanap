@@ -8,7 +8,7 @@ fetch("http://localhost:3000/api/products")
     }
 })
 
-// Récupération dans la valeur "produits" et utilisation de la fonction "accueil".
+// Récupération dans la valeur dans "produits" et utilisation de la fonction "accueil".
 .then(function(produits) {
     console.log(produits);
     accueil(produits);
@@ -16,7 +16,7 @@ fetch("http://localhost:3000/api/products")
 
 // Gestion des erreurs.
 .catch(function(err) {
-// À compléter.
+console.log("Erreur:" + err);}
 })
 
 // Fonction: affichage des produits sur la page d'accueil.
