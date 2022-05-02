@@ -1,5 +1,6 @@
 // Gestion de l'ID utilisateur
-var idUtilisateur = new URL(location.href).searchParams.get("_id");
+const idUtilisateur = new URL(location.href).searchParams.get("_id");
+
 fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 
 // Gestion de la requête et récupération des données (voir fonctions ci-dessous)
@@ -10,67 +11,73 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 })
 .then(function(data) {
 
-    images(data);
-    valeurs(data);
-    couleurs(data);
-    articles(data);
+valeur(data)
+images(data)
+couleurs(data)
 
+    function valeur (data) {
+  // Gestion des valeurs
+            let IdDesTitres = document.getElementById("title");
+            IdDesTitres.innerText = data.name;
+            let IdDesDescriptions = document.getElementById("description");
+            IdDesDescriptions.innerText = data.description;
+            let IdDesPrix = document.getElementById("price");
+            IdDesPrix.innerText = data.price;
+    }
+  
+    function images (data) {
         // Gestion des images
-        function images(index) {
-            var classeDesImages = document.getElementsByClassName("item__img")[0];
-            var elementImg = document.createElement('img');
+            let classeDesImages = document.getElementsByClassName("item__img")[0];
+            let elementImg = document.createElement('img');
             elementImg.alt = data.altTxt;
             elementImg.src = data.imageUrl;
             classeDesImages.appendChild(elementImg);
-        }
+    }
 
-        // Gestion des valeurs
-        function valeurs(index) {
-            var IdDesTitres = document.getElementById("title");
-            IdDesTitres.innerText = data.name;
-            var IdDesDescriptions = document.getElementById("description");
-            IdDesDescriptions.innerText = data.description;
-            var IdDesPrix = document.getElementById("price");
-            IdDesPrix.innerText = data.price;
-        }
-
+    function couleurs (data) {
         // Gestion des couleurs
-        function couleurs(index) {
         let valeursDesCouleurs = data.colors;
         for(let i = 0; i < valeursDesCouleurs.length; i++) {
             let IdDesCouleurs = document.getElementById('colors');
             let optionDesCouleurs = document.createElement("option");
             IdDesCouleurs.appendChild(optionDesCouleurs);
             optionDesCouleurs.innerText = (valeursDesCouleurs[i]);
-            optionDesCouleurs.data = (valeursDesCouleurs[i]);
-            const selectionCouleur = document.getElementById('colors');
+            optionDesCouleurs.value = (valeursDesCouleurs[i]);
         }
     }
 
-        // Gestion de la quantité des articles
-        function articles(index) {
-        const articlesQuantite = document.getElementById('quantity');
-    }
-
-
-
+    const selectionCouleur = document.getElementById('colors');
+    var articlesQuantite = document.getElementById('quantity');
     let boutonActivation = document.getElementById('addToCart');
-    
+
     boutonActivation.addEventListener('click', () => {
 
-    // Gestion des informations et stockage dans un objet
-    let articlesObjet = {
-        Identifiant : idUtilisateur,
-        Couleur : selectionCouleur.data,
-        Nombre : Number(articlesQuantite.data),
-    };
+        // console.log (articlesQuantite.data)
+        // console.log (articlesQuantite.value)
+
+        if (Number(articlesQuantite.value) < 1 ||
+        Number(articlesQuantite.value) > 100 ||
+        !selectionCouleur.value ||
+        !Number(articlesQuantite.value)
+        )
+        {
+            alert("Veuillez choisir une couleur, et un nombre entre 1 et 100");
+        }
+    
+    let articlesObjet = {};
+    articlesObjet.Identifiant = idUtilisateur;
+    articlesObjet.Couleur = selectionCouleur.data;
+    articlesObjet.Nombre = Number(articlesQuantite.data);
 
     // Gestion du panier et création d'un tableau 
-    let panier = null;
-    if (localStorage.getItem('panier') === null) {
-    panier = [];
-    } else {
-    panier = JSON.parse(localStorage.getItem('panier'));
+    let panier = JSON.parse(localStorage.getItem('panier')) || []
+        console.log(panier)
+    for(let i = 0; i < panier.length; i++) {
+        let contenu = panier[i]
+       
+        if(contenu.color === articlesObjet.color && articlesObjet.Identifiant === contenu.Identifiant) {
+            panier[i].Nombre += articlesObjet.Nombre
+        }
     }
 
     // Gestion du panier et import de l'objet dans le tableau
@@ -81,8 +88,6 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
         localStorage.setItem('panier', conversion);
 
     })
-
-
 
 })
 
