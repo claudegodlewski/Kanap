@@ -25,7 +25,7 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
     
     });
 
-// Fonction: récupération du panier du localStorage
+// Fonction: récupération du panier depuis localStorage
     function panierLocalStorage() {
       return localStorage.getItem("panier");
     }
@@ -76,9 +76,9 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
       const quantity = document.getElementById('quantity');
       const color = document.getElementById('colors');
 
-      if (color.value == "" || quantity.value < 1 || quantity.value > 100) {
+      if (color.value == "" || quantity.value < 1 || quantity.value > 100 || quantity.value.includes(".")) {
         {
-            alert("Choisissez une couleur et un nombre entre 1 et 100.");
+            alert("Choisissez une couleur et un nombre entier entre 1 et 100.");
         }
       } else {
         let article = {
@@ -95,7 +95,7 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
       }
     }
 
-//Event Listener sur le bouton
+//Evènement sur le bouton
     const bouton = document.getElementById('addToCart');
     bouton.addEventListener("click", creerArticle);
   })
