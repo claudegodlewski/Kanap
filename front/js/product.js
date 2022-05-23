@@ -47,10 +47,11 @@ function recuperationLocalStorage() {
 
 // Fonction: anti-doublons pour le panier
 // source pour findIndex: (https://www.w3schools.com/jsref/jsref_findindex.asp)
-function antiDoublons(a) {
+function antiDoublons(a) { 
   const tableauPourObjet = JSON.parse(recuperationLocalStorage());
     let verifierIndex = tableauPourObjet.findIndex((test) => test.color == a.color && test.id == a.id);
-      return verifierIndex;
+    //console.log(verifierIndex); //Sans doublons donne -1 et avec doublons donne 0
+    return verifierIndex;
 }
 
 
@@ -102,12 +103,15 @@ if (!contenu) {
   tableauPourObjet = JSON.parse(contenu);
 
   const articlesIdentiques = antiDoublons(article);
+  //console.log(articlesIdentiques);
 
-  if (articlesIdentiques >= 0) {
+  if (articlesIdentiques >= 0) { // Rappel pour articlesIdentiques (sans doublons donne -1 et avec doublons donne 0)
 
-    tableauPourObjet[articlesIdentiques].quantity = String(parseFloat(tableauPourObjet[articlesIdentiques].quantity) + parseFloat(article.quantity));
+    tableauPourObjet[articlesIdentiques].quantity = parseFloat(tableauPourObjet[articlesIdentiques].quantity) + parseFloat(article.quantity); // Ajout des quantités objets localStorage + objets JS 
 
-    tableauPourObjet[articlesIdentiques].totalPrice = String(parseFloat(tableauPourObjet[articlesIdentiques].totalPrice) + parseFloat(article.price));
+    //console.log(tableauPourObjet[articlesIdentiques].quantity); //Quantité
+
+    tableauPourObjet[articlesIdentiques].totalPrice = parseFloat(tableauPourObjet[articlesIdentiques].totalPrice) + parseFloat(article.price);
 
   } else {
 
