@@ -45,7 +45,7 @@ if (contenu)
 
 
 
-      // Fonction: calcul des prix.
+      // Fonction: calcul des quantités et des prix.
       function gestionQuantitePrix(a) {
 
         let fullQuantity = document.getElementById('totalQuantity');
@@ -69,7 +69,7 @@ if (contenu)
 
 
 
-      // Gestion de la quantité des articles.
+      // Affichage de la quantité des articles.
       const articlesQuantites = document.querySelectorAll(".itemQuantity");
 
       articlesQuantites.forEach(function (quantity, a) {
@@ -90,7 +90,6 @@ if (contenu)
           {
             let nouveauQuantite = quantity.value;
             
-            // Affichage de la nouvelle quantité.
             let afficherNouveauQuantite = document.querySelectorAll(".cart__item__content__settings__quantity p");
               afficherNouveauQuantite[a].textContent = "Qté : " + parseInt(nouveauQuantite);
                 contenu[a].quantity = parseInt(quantity.value);
