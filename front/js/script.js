@@ -1,42 +1,39 @@
-// Récupération des informations du service web.
+// Récupération des informations concernant les canapés: identifiants, images, noms, descriptions etc.
 fetch("http://localhost:3000/api/products")
 
-// Récupération au format JSON et vérification du succès de la requête.
+// Première promesse: vérification du succès de la requête, et récupération des données au format JSON.
 .then(function(res) {
   if (res.ok) {
     return res.json();
     }
 })
 
-// Récupération de la valeur dans "produits" et utilisation de la fonction "accueil".
+// Seconde promesse: récupération de la valeur dans "produits" et utilisation de la fonction "accueil".
 .then(function(produits) {
-  console.log(produits);
-    accueil(produits);
+  accueil(produits);
 })
 
-// Gestion des erreurs.
+// Affichage de l'erreur dans la console en cas de problèmes.
 .catch(function(err) {
-  console.log(err)
+  console.log(err.message);
 })
 
 // Fonction: affichage des produits sur la page d'accueil.
 function accueil(a) {
 
-// DOM: Séléction de l'élément ayant l'ID "items".
+// DOM: Séléction de l'élément dont la propriété id correspond à "items".
 const articleTraitement = document.getElementById("items");
 
-/* Boucle: récupération de _id, imageUrl, altTxt, name, et description pour chaque produit.
-Ajout dans la page d'accueil des éléments avec innerHTML.
-*/
-
-for (let article of a) {
-    articleTraitement.innerHTML += `<a href="./product.html?_id=${article._id}">
-    <article>
-      <img src= "${article.imageUrl}" alt="${article.altTxt}">
-      <h3 class="productName">${article.name}</h3>
-      <p class="productDescription">${article.description}</p>
-    </article>
+// Boucle: récupération des valeurs des clés de chaque produit ("a" correspond à "produits").
+a.forEach((b) => {
+  articleTraitement.innerHTML += 
+  `<a href="./product.html?_id=${b._id}">
+  <article>
+  <img src= "${b.imageUrl}" alt="${b.altTxt}">
+  <h3 class="productName">${b.name}</h3>
+  <p class="productDescription">${b.description}</p>
+  </article>
   </a>`;
-  }
-  
+})
+
 }
