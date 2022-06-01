@@ -1,355 +1,339 @@
-// Récupération du panier depuis localStorage
-const contenu = JSON.parse(localStorage.getItem("panier")) || [];
-contenu.sort((a, b) => a.name.localeCompare(b.name)); // source: https://www.codegrepper.com/code-examples/javascript/frameworks/node_modules/sort+javascript+alphabetically
+// Récupération du panier depuis localStorage et sortie par ordre alphabétique.
+const contenu = JSON.parse(localStorage.getItem("panierKanap")) || [];
+contenu.sort((a, b) => a.name.localeCompare(b.name));
 
-// Gestion du Total
-let totalPrice = document.getElementById('totalPrice');
-let totalQuantity = document.getElementById('totalQuantity');
-let gestionPrix = 0;
-let gestionQuantite = 0;
+if (contenu)
+{
+
+  contenu.forEach(function (a) {
+
+    // Récupération de tous les identifiants du client:
+    fetch(`http://localhost:3000/api/products/${a.id}`)
+
+    // Première promesse: récupération des détails de l'article choisi par le client.
+    .then(function(res) {
+        if (res.ok) {
+          return res.json();
+          }
+      })
+
+    // Seconde promesse: récupération du prix unitaire dans "b" et ajout des informations dans le code HTML.
+    .then(function(b) {
+
+      document.querySelector("#cart__items").innerHTML +=
+        `<article class="cart__item" data-Id="${a.id}" data-color="${a.color}">
+        <div class="cart__item__img">
+        <img src="${a.image}" alt="${a.altTxt}">
+        </div>
+        <div class="cart__item__content">
+        <div class="cart__item__content__description">
+        <h2>${a.name}</h2>
+        <p>${a.color}</p>
+        <p class="article__price">${b.price} €</p>
+        <input type="hidden" value="${a.quantity*b.price}">
+        </div>
+        <div class="cart__item__content__settings">
+        <div class="cart__item__content__settings__quantity">
+        <p>Qté : ${a.quantity}</p>
+        <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${a.quantity}">
+        </div>
+        <div class="cart__item__content__settings__delete">
+        <p class="deleteItem">Supprimer</p>
+        </div>
+        </div>
+        </article>`;
 
 
 
-// Fonction: gestion du total
-function gestionTotale(article) {
+      // Fonction: calcul des prix.
+      function gestionQuantitePrix(a) {
 
-    let gestionPrix = contenu
-      .map((article) => parseInt(article.totalPrice)) // source: https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_map
-      .reduce((a, b) => a + b); // source: https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_reduce
+        let fullQuantity = document.getElementById('totalQuantity');
 
-    totalPrice.innerHTML = gestionPrix;
+        let productsQuantity = contenu
+        .map((a) => parseInt(a.quantity))
+        .reduce((a, b) => a + b);
 
-    let gestionQuantite = contenu
-      .map((article) => parseInt(article.quantity))
-      .reduce((a, b) => a + b);
+        fullQuantity.innerHTML = productsQuantity;
 
-    totalQuantity.innerHTML = gestionQuantite;
+        let fullPrice = document.getElementById('totalPrice');
+        let total = 0;
+        document.querySelectorAll('input[type="hidden"]').forEach(el=>total+=+el.value);
+        fullPrice.innerHTML = total;
 
-}
-
-
-
-// Fonction: retrait d'article
-function enleverArticle(i) {
-  contenu.splice(i, 1);
-  localStorage.setItem("panier", JSON.stringify(contenu));
-  // location.reload(); // deprecated
-}
+      }
 
 
 
-// HTML
-if (contenu == null) {
+      gestionQuantitePrix(a)
 
-} else {
-  
-  contenu.forEach((article) => {
 
-    document.querySelector(
-      "#cart__items"
-    ).innerHTML += `<article class="cart__item" data-Id="${article.id}" data-color="${article.color}">
-            <div class="cart__item__img">
-                <img src="${article.image}" alt="${article.altTxt}">
-            </div>
-            <div class="cart__item__content">
-                <div class="cart__item__content__description">
-                    <h2>${article.name}</h2>
-                    <p>${article.color}</p>
-                    <p id="article__price">${article.price} €</p>
-                </div>
-            <div class="cart__item__content__settings">
-                <div class="cart__item__content__settings__quantity">
-                    <p>Qté : ${article.quantity}</p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${article.quantity}">
-                </div>
-                <div class="cart__item__content__settings__delete">
-                    <p class="deleteItem">Supprimer</p>
-                </div>
-            </div>
-            </div>
-         </article>`;
 
-    gestionTotale(article);
+      // Gestion de la quantité des articles.
+      const articlesQuantites = document.querySelectorAll(".itemQuantity");
+
+      articlesQuantites.forEach(function (quantity, a) {
+
+        // Début de quantity.addEventListener.
+        quantity.addEventListener("change", () => {
+
+          if (quantity.value < 0) 
+          {
+            enleverArticle(a);
+          }
+          if (quantity.value < 1 || quantity.value > 100 || quantity.value.includes("."))
+          {    
+            alert("Veuillez choisir un nombre entier entre 1 et 100.");
+              location.reload();
+          } 
+          else 
+          {
+            let nouveauQuantite = quantity.value;
+            
+            // Affichage de la nouvelle quantité.
+            let afficherNouveauQuantite = document.querySelectorAll(".cart__item__content__settings__quantity p");
+              afficherNouveauQuantite[a].textContent = "Qté : " + parseInt(nouveauQuantite);
+                contenu[a].quantity = parseInt(quantity.value);
+                  localStorage.setItem("panierKanap", JSON.stringify(contenu));
+                    location.reload();
+          }
+
+        }); 
+        // Fin de quantity.addEventListener.
+
+      }); // Fin de articlesQuantites.forEach.
+
+      // Bouton de suppression.
+      const boutonRetrait = document.querySelectorAll(".deleteItem");
+      boutonRetrait.forEach(function (bouton, a) {
+        bouton.addEventListener("click", () => {
+          enleverArticle(a);
+            location.reload();
+        });
+      });
+
+      // Fonction: retrait d'article.
+      function enleverArticle(a) {
+        contenu.splice(a, 1);
+          localStorage.setItem("panierKanap", JSON.stringify(contenu));
+      }
+
+    });
+    //Fin de .then(function.
 
   });
+  // Fin de contenu.forEach.
 
 }
+// Fin de if.
 
 
 
-// Quantités articles
-const articlesQuantites = document.querySelectorAll(".itemQuantity");
+// Fonction: ajout des regex.
+function regexFormulaire() {
 
+  // Ajout des Regex.
+    let selectionClasseForm = document.querySelector(".cart__order__form");
 
-articlesQuantites.forEach(function (quantity, i) {
+  // Création des expressions régulières.
+    let verificationPrenom = new RegExp("^[a-zA-Z '-]+$");
+    let verificationNom = new RegExp("^[a-zA-Z '-]+$");
+    let verificationAdresse = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
+    let verificationVille = new RegExp("^[a-zA-Z '-]+$");
+    let verificationEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
 
-        quantity.addEventListener("change", () => { // source: https://www.javascripttutorial.net/javascript-dom/javascript-change-event
-
-            if (quantity.value < 0) {
-
-              enleverArticle(i);
-              console.log(quantity.closest("article"))
-              quantity.closest("article").remove()
-
-            } else {
-              
-              let nouveauPrix = String(quantity.value * contenu[i].price);
-              let nouveauQuantite = quantity.value;
-              let afficherNouveauPrix = document.querySelectorAll("#article__price");
-              let afficherNouveauQuantite = document.querySelectorAll(
-                ".cart__item__content__settings__quantity p"
-              );
-
-            // Affichage du nouveau prix
-              afficherNouveauQuantite[i].textContent = "Qté : " + parseInt(nouveauQuantite) ;
-
-              contenu[i].quantity = quantity.value;
-              contenu[i].totalPrice = nouveauPrix;
-
-              localStorage.setItem("panier", JSON.stringify(contenu));
-
-            }
-
-            // Maj du formulaire
-            gestionPrix = 0;
-            gestionQuantite = 0;
-
-            contenu.forEach((article) => {
-
-              gestionTotale(article);
-
-            });
-
-        }); // Fin quantity.addEventListener
-
-}); // Fin de articlesQuantites.forEach
-
-
-
-// Bouton de suppression
-const boutonRetrait = document.querySelectorAll(".deleteItem");
-
-boutonRetrait.forEach(function (btn, i) {
-  btn.addEventListener("click", () => {
-    enleverArticle(i);
-    btn.closest("article").remove()
-    //window.location.href = window.location.href;
+  // Ecoute de la modification du prénom.
+  selectionClasseForm.firstName.addEventListener('change', function() {
+    validationFirstName(this);
   });
-});
+
+  // Ecoute de la modification du nom.
+  selectionClasseForm.lastName.addEventListener('change', function() {
+    validationLastName(this);
+  });
+
+  // Ecoute de la modification de l'adresse.
+  selectionClasseForm.address.addEventListener('change', function() {
+    validationAddress(this);
+  });
+
+  // Ecoute de la modification de la ville.
+  selectionClasseForm.city.addEventListener('change', function() {
+    validationCity(this);
+  });
+
+  // Ecoute de la modification de l'e-mail.
+  selectionClasseForm.email.addEventListener('change', function() {
+    validationEmail(this);
+  });
+
+  // Validation du prénom.
+  const validationFirstName = function(inputFirstName) {
+
+      let firstNameErrorMsg = inputFirstName.nextElementSibling;
+
+      if (verificationPrenom.test(inputFirstName.value)) {
+        
+          firstNameErrorMsg.innerText = '';
+
+      } else {
+          firstNameErrorMsg.innerText = "Veuillez écrire un prénom correct.";
+      }
+
+  }
+
+  // Validation du nom.
+  const validationLastName = function(inputLastName) {
+
+      let lastNameErrorMsg = inputLastName.nextElementSibling;
+
+      if (verificationNom.test(inputLastName.value)) {
+          lastNameErrorMsg.innerText = '';
+
+      } else {
+          lastNameErrorMsg.innerText = "Veuillez écrire un nom correct.";
+      }
+
+  }
+
+  // Validation de l'adresse.
+  const validationAddress = function(inputAddress) {
+
+      let addressErrorMsg = inputAddress.nextElementSibling;
+
+      if (verificationAdresse.test(inputAddress.value)) {
+        addressErrorMsg.innerText = '';
+
+      } else {
+        addressErrorMsg.innerText = "Veuillez écrire une adresse correcte.";
+      }
+
+  }
+
+  // Validation de la ville.
+  const validationCity = function(inputCity) {
+
+      let cityErrorMsg = inputCity.nextElementSibling;
+
+      if (verificationVille.test(inputCity.value)) {
+        cityErrorMsg.innerText = '';
+
+      } else {
+        cityErrorMsg.innerText = "Veuillez écrire une ville correcte.";
+      }
+
+  }
+
+  // Validation de l'email.
+  const validationEmail = function(inputEmail) {
+
+      let emailErrorMsg = inputEmail.nextElementSibling;
+
+      if (verificationEmail.test(inputEmail.value)) {
+        emailErrorMsg.innerText = '';
+
+      } else {
+        emailErrorMsg.innerText = "Veuillez écrire un e-mail correct.";
+      }
+
+  }
+
+} // Fin de regexFormulaire().
 
 
 
-// Ajout d'exemples dans le formulaire pour les utilisateurs
-  document.getElementById("firstName").setAttribute('value','Ecrivez votre prénom');
-  document.getElementById("lastName").setAttribute('value','Ecrivez votre nom');
-  document.getElementById("address").setAttribute('value','Ecrivez votre adresse');
-  document.getElementById("city").setAttribute('value','Ecrivez votre ville');
-  document.getElementById("email").setAttribute('value','Ecrivez votre e-mail');
+// Fonction: traitement des données utilisateurs.
+function traitementDonneesUtilisateurs() {
 
+  // Mise à zéro des champs du formulaire.
+  // En cas de rafraichissment de la page l'utilisateur doit renseigner les champs.
+  document.getElementById("firstName").value = '';
+  document.getElementById("lastName").value = '';     
+  document.getElementById("address").value = '';     
+  document.getElementById("city").value = '';         
+  document.getElementById("email").value = '';
 
+    const achats = document.getElementById('order');
+
+    // Début de order.addEventListener.
+    order.addEventListener('click', (event) => {
+
+      event.preventDefault();
+
+      // Ajout des données du formulaire dans un objet.
+      const contact = {};
+      contact.firstName = document.getElementById("firstName").value;
+      contact.lastName = document.getElementById("lastName").value;
+      contact.address = document.getElementById("address").value;
+      contact.city = document.getElementById("city").value;
+      contact.email = document.getElementById("email").value;
+
+      // Vérification finale des données du formulaire.
+      if (localStorage.getItem("panierKanap") === null ||
+
+      document.getElementById("firstName").value === '' ||
+      document.getElementById("lastName").value === '' ||         
+      document.getElementById("address").value === '' ||         
+      document.getElementById("city").value === '' ||          
+      document.getElementById("email").value === '' ||
+
+      firstNameErrorMsg.innerText != '' ||
+      lastNameErrorMsg.innerText != '' || 
+      addressErrorMsg.innerText != '' || 
+      cityErrorMsg.innerText != '' || 
+      emailErrorMsg.innerText != '')
+
+      {
+
+      {
+
+      alert("Erreur avec le panier ou le formulaire");
+
+      }
+
+        return;
+
+      }
+
+      // Tableau des identifiants.
+      const products = [];
+
+      contenu.forEach((a) => {
+        products.push(a.id);
+        //console.log(products);
+      });
+
+      // Création d'un objet et ajout du formulaire de contact et des identifiants.
+      const objetFormulaireProduits = {
+        contact,
+        products
+      };
+
+      // Envoi des informations avec la méthode POST.
+      const options = {
+        method: 'POST',
+        body: JSON.stringify(objetFormulaireProduits),
+        headers: { 
+        'Content-Type': 'application/json',
+        }
+      };
+
+      // Récupération de orderId.
+      fetch("http://localhost:3000/api/products/order", options)
+      .then(function(res) {
+      if (res.ok) {
+        return res.json();
+        }
+      })
+
+      .then(function(a) {
+        document.location.href = `confirmation.html?id=${a.orderId}`;
+      })
+
+    }); 
+    // Fin de order.addEventListener.
+
+} // Fin de traitementDonneesUtilisateurs().
 
   regexFormulaire()
   traitementDonneesUtilisateurs()
-
-
-
-// Fonction: ajout des regex
-function regexFormulaire() {
-
-      // Ajout des Regex
-        let selectionClasseForm = document.querySelector(".cart__order__form");
-
-      // Création des expressions régulières
-        let verificationPrenom = new RegExp("^[a-zA-Z '-]+$");
-        let verificationNom = new RegExp("^[a-zA-Z '-]+$");
-        let verificationAdresse = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
-        let verificationVille = new RegExp("^[a-zA-Z '-]+$");
-        let verificationEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
-
-      // Ecoute de la modification du prénom
-      selectionClasseForm.firstName.addEventListener('change', function() {
-        validationFirstName(this);
-      });
-
-      // Ecoute de la modification du nom
-      selectionClasseForm.lastName.addEventListener('change', function() {
-        validationLastName(this);
-      });
-
-      // Ecoute de la modification de l'adresse
-      selectionClasseForm.address.addEventListener('change', function() {
-        validationAddress(this);
-      });
-
-      // Ecoute de la modification de la ville
-      selectionClasseForm.city.addEventListener('change', function() {
-        validationCity(this);
-      });
-
-      // Ecoute de la modification de l'e-mail
-      selectionClasseForm.email.addEventListener('change', function() {
-        validationEmail(this);
-      });
-
-          // Validation du prénom
-          const validationFirstName = function(inputFirstName) {
-
-              let firstNameErrorMsg = inputFirstName.nextElementSibling;
-
-              if (verificationPrenom.test(inputFirstName.value)) { //https://developer.mozilla.org/fr/docs/Web/JavaScript/Reference/Global_Objects/RegExp/test
-                
-                  firstNameErrorMsg.innerText = '';
-
-
-
-              } else {
-                  firstNameErrorMsg.innerText = "Veuillez ne pas écrire de chiffres dans votre prénom.";
-              }
-
-          }
-
-          // Validation du nom
-          const validationLastName = function(inputLastName) {
-
-              let lastNameErrorMsg = inputLastName.nextElementSibling;
-
-              if (verificationNom.test(inputLastName.value)) {
-                  lastNameErrorMsg.innerText = '';
-
-
-
-              } else {
-                  lastNameErrorMsg.innerText = "Veuillez ne pas écrire de chiffres dans votre nom.";
-              }
-
-          }
-
-          // Validation de l'adresse
-          const validationAddress = function(inputAddress) {
-
-              let addressErrorMsg = inputAddress.nextElementSibling;
-
-              if (verificationAdresse.test(inputAddress.value)) {
-                addressErrorMsg.innerText = '';
-
-
-
-              } else {
-                addressErrorMsg.innerText = "Veuillez écrire une adresse correcte.";
-              }
-
-          }
-
-          // Validation de la ville
-          const validationCity = function(inputCity) {
-
-              let cityErrorMsg = inputCity.nextElementSibling;
-
-              if (verificationVille.test(inputCity.value)) {
-                cityErrorMsg.innerText = '';
-
-
-
-              } else {
-                cityErrorMsg.innerText = "Veuillez écrire une ville correcte.";
-              }
-
-          }
-
-          // Validation de l'email
-          const validationEmail = function(inputEmail) {
-
-              let emailErrorMsg = inputEmail.nextElementSibling;
-
-              if (verificationEmail.test(inputEmail.value)) {
-                emailErrorMsg.innerText = '';
-
-
-
-              } else {
-                emailErrorMsg.innerText = "Veuillez écrire votre e-mail.";
-              }
-
-          }
-
-} // Fin de regexFormulaire()
-
-
-
-// Fonction: traitement des données utilisateurs
-function traitementDonneesUtilisateurs() {
-  
-    const achats = document.getElementById('order');
-
-        order.addEventListener('click', (event) => {
-
-            event.preventDefault();
-          
-            // Ajout des données du formulaire dans un objet
-            const contact = {};
-            contact.firstName = document.getElementById("firstName").value;
-            contact.lastName = document.getElementById("lastName").value;
-            contact.address = document.getElementById("address").value;
-            contact.city = document.getElementById("city").value;
-            contact.email = document.getElementById("email").value;
-
-            // Vérification finale des données du formulaire
-            if (localStorage.getItem("panier") === null ||
-
-            document.getElementById("firstName").value === 'Ecrivez votre prénom' ||
-            document.getElementById("lastName").value === 'Ecrivez votre nom' ||         
-            document.getElementById("address").value === 'Ecrivez votre adresse' ||         
-            document.getElementById("city").value === 'Ecrivez votre ville' ||          
-            document.getElementById("email").value === 'Ecrivez votre e-mail' ||
-            
-            firstNameErrorMsg.innerText != '' ||
-            lastNameErrorMsg.innerText != '' || 
-            addressErrorMsg.innerText != '' || 
-            cityErrorMsg.innerText != '' || 
-            emailErrorMsg.innerText != '')
-
-            {
-
-              {  
-               alert("Erreur avec le panier ou le formulaire");
-              }
-
-              return;
-
-            }
-
-              // Tableau Id
-              const products = [];
-                contenu.forEach((article) => {
-                products.push(article.id);
-                console.log(products)
-              });
-          
-                // Création Objet et ajout du formulaire du contact et de l'Id
-                const objetFormulaireProduits = {
-                  contact,
-                  products
-                };
-          
-                  // Envoi avec méthode POST
-                  const options = {
-                    method: 'POST',
-                    body: JSON.stringify(objetFormulaireProduits),
-                    headers: { 
-                      'Content-Type': 'application/json',
-                    }
-                  };
-                
-                    // Récupération de orderId 
-                    fetch("http://localhost:3000/api/products/order", options)
-                    .then((res) => {
-                      return res.json();
-                    })
-
-                      .then((valeur) => {
-                        document.location.href = `confirmation.html?id=${valeur.orderId}`;
-                      })
-
-        }); // Fin order.addEventListener
-
-} // Fin de traitementDonneesUtilisateurs()
