@@ -1,24 +1,23 @@
-// Récupération de l'identifiant
+// Récupération de l'identifiant du client dans l'URL: cela correspond au choix de canapé(s) de l'utilisateur.
 const idUtilisateur = new URL(location.href).searchParams.get('_id');
 
-
-
-// Récupération des informations au format JSON
+// Récupération des informations concernant le choix du client: obtention des détails concernant le produit choisi.
 fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 
+// Première promesse: récupération des détails de l'article choisi par le client.
   .then((res) => {
     return res.json();
   })
 
-  .then((maValeur) => {
+// Seconde promesse: récupération de la valeur dans "produit" et ajout des informations dans le code HTML.
+  .then((produit) => {
 
-    // Ajout des informations dans le code HTML
-    document.querySelector('.item__img').innerHTML = `<img src="${maValeur.imageUrl}" alt="${maValeur.altTxt}">`;
-    document.getElementById('title').innerText = maValeur.name;
-    document.getElementById('price').innerText = maValeur.price;
-    document.getElementById('description').innerText = maValeur.description;
+    document.querySelector('.item__img').innerHTML = `<img src="${produit.imageUrl}" alt="${produit.altTxt}">`;
+    document.getElementById('title').innerText = produit.name;
+    document.getElementById('price').innerText = produit.price;
+    document.getElementById('description').innerText = produit.description;
 
-    maValeur.colors.forEach((a) => {
+    produit.colors.forEach((a) => {
 
       let optionsCouleurs = document.createElement("option");
       optionsCouleurs.innerText = `${a}`;
@@ -29,38 +28,28 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
     
     });
 
-
-
-// Fonction: stockage du panier
+// Fonction: stockage du panier.
 function stockagePanierLocalStorage(a) {
-  localStorage.setItem("panier", JSON.stringify(a));
+  localStorage.setItem("panierKanap", JSON.stringify(a));
 }
 
-
-
-// Fonction: récupération du panier depuis localStorage
+// Fonction: récupération du panier depuis localStorage.
 function recuperationLocalStorage() {
-  return localStorage.getItem("panier");
+  return localStorage.getItem("panierKanap");
 }
 
-
-
-// Fonction: anti-doublons pour le panier
-// source pour findIndex: (https://www.w3schools.com/jsref/jsref_findindex.asp)
+// Fonction: anti-doublons pour le panier.
 function antiDoublons(a) { 
-  const tableauPourObjet = JSON.parse(recuperationLocalStorage());
-    let verifierIndex = tableauPourObjet.findIndex((test) => test.color == a.color && test.id == a.id);
-    //console.log(verifierIndex); //Sans doublons donne -1 et avec doublons donne 0
+  const objetATester = JSON.parse(recuperationLocalStorage());
+    let verifierIndex = objetATester.findIndex((b) => b.color == a.color && b.id == a.id);
+    //console.log(verifierIndex); // Sans doublons donne -1 et avec doublons donne 0.
     return verifierIndex;
 }
 
-
-
-// Fonction: création d'un article
+// Fonction: création d'un article.
 function creerArticle() {
 
   const quantity = document.getElementById('quantity');
-
   const color = document.getElementById('colors');
 
   if (color.value == "" || quantity.value < 1 || quantity.value > 100 || quantity.value.includes(".")) {
@@ -71,47 +60,47 @@ function creerArticle() {
 
   } else {
 
-// Création d'un objet
+// Création d'un objet sans stockage du prix (sécurité)
 let article = {
   id: `${idUtilisateur}`,
-  name: `${maValeur.name}`,
+  name: `${produit.name}`,
   color: `${color.value}`,
   quantity: `${quantity.value}`,
-  totalPrice: String(`${quantity.value}` * `${maValeur.price}`),
-  price: `${maValeur.price}`,
-  image: `${maValeur.imageUrl}`,
-  altTxt: `${maValeur.altTxt}`,
+  //totalPrice: String(`${quantity.value}` * `${produit.price}`),
+  //price: `${produit.price}`,
+  image: `${produit.imageUrl}`,
+  altTxt: `${produit.altTxt}`,
 };
 
-// Récupération de ce qui est contenu dans le localStorage
+// Récupération de ce qui est contenu dans le localStorage.
 const contenu = recuperationLocalStorage();
 
 if (!contenu) {
 
-  // Création d'un tableau
+  // Création d'un tableau.
   let tableauPourObjet = [];
 
-  // Ajout de l'objet article dans le tableau
+  // Ajout de l'objet article dans le tableau.
   tableauPourObjet.push(article);
 
-  // Ajout du tableau contenant l'objet dans le localStorage
+  // Ajout du tableau contenant l'objet dans le localStorage.
   stockagePanierLocalStorage(tableauPourObjet);
 
 } else {
 
-  // Conversion de l'objet JSON au format JavaScript
+  // Conversion de l'objet JSON au format JavaScript.
   tableauPourObjet = JSON.parse(contenu);
 
   const articlesIdentiques = antiDoublons(article);
   //console.log(articlesIdentiques);
 
-  if (articlesIdentiques >= 0) { // Rappel pour articlesIdentiques (sans doublons donne -1 et avec doublons donne 0)
+  if (articlesIdentiques >= 0) { // Rappel pour articlesIdentiques (sans doublons donne -1 et avec doublons donne 0).
 
     tableauPourObjet[articlesIdentiques].quantity = parseFloat(tableauPourObjet[articlesIdentiques].quantity) + parseFloat(article.quantity); // Ajout des quantités objets localStorage + objets JS 
 
-    //console.log(tableauPourObjet[articlesIdentiques].quantity); //Quantité
+    //console.log(tableauPourObjet[articlesIdentiques].quantity);
 
-    tableauPourObjet[articlesIdentiques].totalPrice = parseFloat(tableauPourObjet[articlesIdentiques].totalPrice) + parseFloat(article.price);
+    //tableauPourObjet[articlesIdentiques].totalPrice = parseFloat(tableauPourObjet[articlesIdentiques].totalPrice) + parseFloat(article.price);
 
   } else {
 
@@ -120,6 +109,10 @@ if (!contenu) {
   }
 
     stockagePanierLocalStorage(tableauPourObjet);
+
+  {
+      alert("Produit(s) ajouté(s).");
+  }
 
 } 
     
@@ -131,13 +124,11 @@ if (!contenu) {
 
   //Evènement sur le bouton
   const bouton = document.getElementById('addToCart');
-
   bouton.addEventListener("click", creerArticle);
 
-}) // Fin de .then((maValeur)
+}) // Fin de .then((produit)
 
-
-
+// Affichage de l'erreur dans la console en cas de problèmes.
 .catch(function(err) {
-// Une erreur est survenue 
+  console.log(err.message);
 })
