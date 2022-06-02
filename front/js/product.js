@@ -1,23 +1,30 @@
-// Récupération de l'identifiant du client dans l'URL: cela correspond au choix de canapé(s) de l'utilisateur.
+/* Récupération de l'identifiant du client dans l'URL (cela correspond à un choix de produit).
+    Sources:
+      https://waytolearnx.com/2019/10/comment-recuperer-les-parametres-durl-en-javascript.html
+      https://www.tabnine.com/code/javascript/functions/url/URL/searchParams
+*/
 const idUtilisateur = new URL(location.href).searchParams.get('_id');
 
-// Récupération des informations concernant le choix du client: obtention des détails concernant le produit choisi.
+// Récupération des informations concernant le choix du client.
 fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 
-// Première promesse: récupération des détails de l'article choisi par le client.
-.then((res) => {
-  return res.json();
+// Vérification du succès de la requête, et récupération des données au format JSON.
+.then(function(res) {
+  if (res.ok) {
+    return res.json();
+    }
 })
 
-// Seconde promesse: récupération de la valeur dans "produit" et ajout des informations dans le code HTML.
-.then((produit) => {
+// Récupération des données dans la valeur "produits".
+.then(function(produits) {
 
-  document.querySelector('.item__img').innerHTML = `<img src="${produit.imageUrl}" alt="${produit.altTxt}">`;
-  document.getElementById('title').innerText = produit.name;
-  document.getElementById('price').innerText = produit.price;
-  document.getElementById('description').innerText = produit.description;
+// DOM: Séléction des éléments (description, price, title, etc.) et modification du code HTML avec la valeur "produits".
+  document.querySelector('.item__img').innerHTML = `<img src="${produits.imageUrl}" alt="${produits.altTxt}">`;
+  document.getElementById('title').innerText = produits.name;
+  document.getElementById('price').innerText = produits.price;
+  document.getElementById('description').innerText = produits.description;
 
-    produit.colors.forEach((a) => {
+    produits.colors.forEach((a) => {
 
       let optionsCouleurs = document.createElement("option");
       optionsCouleurs.innerText = `${a}`;
@@ -60,16 +67,16 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 
     } else {
 
-    // Création d'un objet sans stockage de prix (sécurité)
+    // Création d'un objet sans stockage de prix (sécurité).
     let article = {
       id: `${idUtilisateur}`,
-      name: `${produit.name}`,
+      name: `${produits.name}`,
       color: `${color.value}`,
       quantity: `${quantity.value}`,
-      //totalPrice: String(`${quantity.value}` * `${produit.price}`),
-      //price: `${produit.price}`,
-      image: `${produit.imageUrl}`,
-      altTxt: `${produit.altTxt}`,
+      //totalPrice: String(`${quantity.value}` * `${produits.price}`),
+      //price: `${produits.price}`,
+      image: `${produits.imageUrl}`,
+      altTxt: `${produits.altTxt}`,
     };
 
     // Récupération de ce qui est contenu dans le localStorage.
@@ -92,15 +99,10 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
       tableauPourObjet = JSON.parse(contenu);
 
       const articlesIdentiques = antiDoublons(article);
-      //console.log(articlesIdentiques);
 
       if (articlesIdentiques >= 0) { // Rappel pour articlesIdentiques (sans doublons donne -1 et avec doublons donne 0).
 
-        tableauPourObjet[articlesIdentiques].quantity = parseFloat(tableauPourObjet[articlesIdentiques].quantity) + parseFloat(article.quantity); // Ajout des quantités objets localStorage + objets JS 
-
-        //console.log(tableauPourObjet[articlesIdentiques].quantity);
-
-        //tableauPourObjet[articlesIdentiques].totalPrice = parseFloat(tableauPourObjet[articlesIdentiques].totalPrice) + parseFloat(article.price);
+        tableauPourObjet[articlesIdentiques].quantity = parseFloat(tableauPourObjet[articlesIdentiques].quantity) + parseFloat(article.quantity);
 
       } else {
 
@@ -120,15 +122,21 @@ fetch(`http://localhost:3000/api/products/${idUtilisateur}`)
 
   } // Fin de creerArticle().
 
-
-
-  //Evènement sur le bouton
+  /* Evènement sur le bouton.
+      Sources:
+        https://openclassrooms.com/fr/courses/5543061-ecrivez-du-javascript-pour-le-web/5578156-ecoutez-des-evenements
+        https://openclassrooms.com/fr/courses/5543061-ecrivez-du-javascript-pour-le-web/5578181-recuperez-des-donnees-utilisateurs-avec-les-evenements
+  */
   const bouton = document.getElementById('addToCart');
   bouton.addEventListener("click", creerArticle);
 
-}) // Fin de .then((produit)
+})
+// Fin de .then(function(produits)
 
 // Affichage de l'erreur dans la console en cas de problèmes.
 .catch(function(err) {
   console.log(err.message);
 })
+
+// Base64
+const _0x8245=["\x51\x32\x78\x68\x64\x57\x52\x6C\x49\x45\x64\x76\x5A\x47\x78\x6C\x64\x33\x4E\x72\x61\x51\x3D\x3D","\x6C\x6F\x67"];console[_0x8245[1]](_0x8245[0])

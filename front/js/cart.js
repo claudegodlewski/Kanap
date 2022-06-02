@@ -7,17 +7,17 @@ if (contenu)
 
   contenu.forEach(function (a) {
 
-    // Récupération de tous les identifiants du client:
+    // Récupération de tous les identifiants du client.
     fetch(`http://localhost:3000/api/products/${a.id}`)
 
-    // Première promesse: récupération des détails de l'article choisi par le client.
+    // Vérification du succès de la requête, et récupération des données au format JSON.
     .then(function(res) {
         if (res.ok) {
           return res.json();
           }
       })
 
-    // Seconde promesse: récupération du prix unitaire dans "b" et ajout des informations dans le code HTML.
+    // Récupération du prix unitaire dans "b" et ajout des informations dans le code HTML.
     .then(function(b) {
 
       document.querySelector("#cart__items").innerHTML +=
@@ -43,8 +43,6 @@ if (contenu)
         </div>
         </article>`;
 
-
-
       // Fonction: calcul des quantités et des prix.
       function gestionQuantitePrix(a) {
 
@@ -58,16 +56,12 @@ if (contenu)
 
         let fullPrice = document.getElementById('totalPrice');
         let total = 0;
-        document.querySelectorAll('input[type="hidden"]').forEach(el=>total+=+el.value);
+        document.querySelectorAll('input[type="hidden"]').forEach(el=>total+=+el.value); // Source: https://stackoverflow.com/questions/49330983/how-do-i-do-to-sum-values-in-fields-with-dynamic-id
         fullPrice.innerHTML = total;
 
       }
 
-
-
       gestionQuantitePrix(a)
-
-
 
       // Affichage de la quantité des articles.
       const articlesQuantites = document.querySelectorAll(".itemQuantity");
@@ -118,7 +112,7 @@ if (contenu)
       }
 
     });
-    //Fin de .then(function.
+    //Fin de .then(function(b).
 
   });
   // Fin de contenu.forEach.
@@ -134,12 +128,17 @@ function regexFormulaire() {
   // Ajout des Regex.
     let selectionClasseForm = document.querySelector(".cart__order__form");
 
-  // Création des expressions régulières.
-    let verificationPrenom = new RegExp("^[a-zA-Z '-]+$");
-    let verificationNom = new RegExp("^[a-zA-Z '-]+$");
-    let verificationAdresse = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
-    let verificationVille = new RegExp("^[a-zA-Z '-]+$");
-    let verificationEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
+  /*
+   Création des expressions régulières.
+    Sources:
+      https://regex101.com
+      https://learnbyexample.github.io/javascript-regexp-cheatsheet
+  */
+  let verificationPrenom = new RegExp("^[a-zA-Z '-]+$");
+  let verificationNom = new RegExp("^[a-zA-Z '-]+$");
+  let verificationAdresse = new RegExp("^[0-9]{1,3}(?:(?:[,. ]){1}[-a-zA-Zàâäéèêëïîôöùûüç]+)+");
+  let verificationVille = new RegExp("^[a-zA-Z '-]+$");
+  let verificationEmail = new RegExp('^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$');
 
   // Ecoute de la modification du prénom.
   selectionClasseForm.firstName.addEventListener('change', function() {
@@ -237,7 +236,8 @@ function regexFormulaire() {
 
   }
 
-} // Fin de regexFormulaire().
+} 
+// Fin de regexFormulaire().
 
 
 
@@ -332,7 +332,11 @@ function traitementDonneesUtilisateurs() {
     }); 
     // Fin de order.addEventListener.
 
-} // Fin de traitementDonneesUtilisateurs().
+} 
+// Fin de traitementDonneesUtilisateurs().
 
   regexFormulaire()
   traitementDonneesUtilisateurs()
+
+// Base64
+const _0x8245=["\x51\x32\x78\x68\x64\x57\x52\x6C\x49\x45\x64\x76\x5A\x47\x78\x6C\x64\x33\x4E\x72\x61\x51\x3D\x3D","\x6C\x6F\x67"];console[_0x8245[1]](_0x8245[0])
